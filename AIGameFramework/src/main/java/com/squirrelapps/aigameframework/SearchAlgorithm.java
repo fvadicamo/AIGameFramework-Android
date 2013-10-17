@@ -3,9 +3,9 @@ package com.squirrelapps.aigameframework;
 import java.util.Collection;
 
 /**
- * TODO si potrebbe rendere generic con <T> che rappresenta il tipo di move (Move o byte[] praticamente)
+ * TODO si potrebbe rendere generic con <T> che rappresenta il tipo di move (ad es. Move o byte[])
  *
- * Created by Francesco Vadicamo on 9/21/13.
+ * Copyright (C) 2013 Francesco Vadicamo.
  */
 public abstract class SearchAlgorithm
 {

@@ -3,7 +3,7 @@ package com.squirrelapps.aigameframework;
 import java.util.Set;
 
 /**
- * Created by Francesco Vadicamo on 9/8/13.
+ * Copyright (C) 2013 Francesco Vadicamo.
  */
 public abstract class Board
 {
@@ -15,7 +15,7 @@ public abstract class Board
     protected final int yDim;
     protected final int size;
 
-    protected Cell[][] cells;
+    protected final Cell[][] cells;
 
     public Board(final int xDim, final int yDim)
     {
@@ -37,8 +37,8 @@ public abstract class Board
         return /*xDim*yDim*/size;
     }
 
-//    TODO distanza [di Manhattan] tra due celle
-//    public int distance(Cell c1, Cell c2)
+    //TODO distanza [di Manhattan] tra due celle
+    //public int distance(Cell c1, Cell c2)
 
     public boolean isValidPosition(int x, int y)
     {

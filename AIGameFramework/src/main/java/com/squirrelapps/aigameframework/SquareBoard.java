@@ -5,11 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by Francesco Vadicamo on 9/8/13.
+ * Copyright (C) 2013 Francesco Vadicamo.
  */
 public class SquareBoard extends Board
 {
-//    TODO realizzare il metodo directionDegree o degreeForDirection
 //    public static final short E = 0;
 //    public static final short NE = 45;
 //    public static final short NNE = 60;   N2E
@@ -39,7 +38,7 @@ public class SquareBoard extends Board
     public Set<Cell> neighbors(Cell cell, int distance)
     {
         if(distance <= 0){
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         Set<Cell> neighbors = new HashSet(8*distance*10/8); //avoiding rehash FIXME va ricalcolato: così considera solo i borderNeighbors
@@ -73,7 +72,7 @@ public class SquareBoard extends Board
     public Set<Cell> borderNeighbors(Cell cell, int distance)
     {
         if(distance <= 0){
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         Set<Cell> neighbors = new HashSet(8*distance*10/8); //avoiding rehash

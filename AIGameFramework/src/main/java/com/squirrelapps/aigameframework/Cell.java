@@ -1,19 +1,10 @@
 package com.squirrelapps.aigameframework;
 
 /**
- * Created by Francesco Vadicamo on 9/8/13.
+ * Copyright (C) 2013 Francesco Vadicamo.
  */
 public class Cell implements Cloneable, Comparable<Cell>
 {
-//    final byte x;
-//    final byte y;
-//
-//    public Cell(byte x, byte y)
-//    {
-//        this.x = x;
-//        this.y = y;
-//    }
-
     final int x;
     final int y;
 
@@ -23,10 +14,16 @@ public class Cell implements Cloneable, Comparable<Cell>
         this.y = y;
     }
 
-    @Override
-    protected Object clone()
+    public Cell(Cell c)
     {
-        return new Cell(x, y);
+        this.x = c.x;
+        this.y = c.y;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException
+    {
+        return new Cell(/*this*/x, y);
     }
 
     @Override
@@ -73,11 +70,4 @@ public class Cell implements Cloneable, Comparable<Cell>
             return -1;
         }
     }
-
-//    //TODO si potrebbe ottimizzare realizzando un private byte[] di classe e restituire sempre quello!
-//    //(forse però sarebbe non conferme al metodo toByteArray che dovrebbe creare sempre una nuova istanza, o no?) o_O'
-//    public byte[] toByteArray()
-//    {
-//        return new byte[]{x, y};
-//    }
 }

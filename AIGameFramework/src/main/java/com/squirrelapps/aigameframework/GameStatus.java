@@ -1,24 +1,18 @@
 package com.squirrelapps.aigameframework;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 /**
- * Created by Francesco Vadicamo on 9/10/13.
+ * Copyright (C) 2013 Francesco Vadicamo.
  */
 public /*abstract*/ class GameStatus //implements Parcelable
 {
-    //TODO pezzi per ogni giocatore
-    //TODO
-
     int currentPlayer;
     int nextPlayer;
 
     int moveNumber;
-    byte[] move;
+    Move move;
 
-    byte[][] playersStatus;
-    byte[] boardStatus;
+    BoardStatus boardStatus;
+    PlayerStatus[] playersStatus;
 
     public GameStatus()
     {
@@ -30,7 +24,67 @@ public /*abstract*/ class GameStatus //implements Parcelable
 //
 //    }
 
-//    public final static GameStatus parseGameStatus(String s)
+    public int getCurrentPlayer()
+    {
+        return currentPlayer;
+    }
+
+    public void setCurrentPlayer(int currentPlayer)
+    {
+        this.currentPlayer = currentPlayer;
+    }
+
+    public int getNextPlayer()
+    {
+        return nextPlayer;
+    }
+
+    public void setNextPlayer(int nextPlayer)
+    {
+        this.nextPlayer = nextPlayer;
+    }
+
+    public int getMoveNumber()
+    {
+        return moveNumber;
+    }
+
+    public void setMoveNumber(int moveNumber)
+    {
+        this.moveNumber = moveNumber;
+    }
+
+    public Move getMove()
+    {
+        return move;
+    }
+
+    public void setMove(Move move)
+    {
+        this.move = move;
+    }
+
+    public BoardStatus getBoardStatus()
+    {
+        return boardStatus;
+    }
+
+    public void setBoardStatus(BoardStatus boardStatus)
+    {
+        this.boardStatus = boardStatus;
+    }
+
+    public PlayerStatus[] getPlayersStatus()
+    {
+        return playersStatus;
+    }
+
+    public void setPlayersStatus(PlayerStatus[] playersStatus)
+    {
+        this.playersStatus = playersStatus;
+    }
+
+    //    public final static GameStatus parseGameStatus(String s)
 //    {
 //        final GameStatus gameStatus = new GameStatus();
 //        //...

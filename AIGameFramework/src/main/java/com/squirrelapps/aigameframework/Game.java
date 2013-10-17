@@ -1,27 +1,44 @@
 package com.squirrelapps.aigameframework;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Created by Francesco Vadicamo on 9/11/13.
+ * Copyright (C) 2013 Francesco Vadicamo.
  */
 public abstract class Game
 {
-    final Board board;
+    protected final Board board;
 
-    //List<GameStatus> gameHistory;
-    //[] di players
-    //game rules
+    protected final Player[] players;
 
-    //TODO undoLastMove
-    //TODO redoLastMove
+    //TODO si potrebbe realizzare una classe apposita GameHistory con tutti i metodi necessari anche per ricercare all'interno dei GameStatus, etc..
+    protected final LinkedList<GameStatus> gameHistory;
 
-
-    public Game(Board board)
+    public Game(Board board, Player[] players, GameStatus firstGameStatus)
     {
         this.board = board;
+        this.players = players;
+
+        this.gameHistory = new LinkedList<GameStatus>();
+        gameHistory.add(firstGameStatus);
     }
 
-    //TODO questo metodo potrebbe essere anche qui ma solo richiamando l'analyzer
-    //public abstract byte[] firstGameStatus(); //TODO andrebbe forse spostato in un Game[Status]Builder
+    public Board getBoard()
+    {
+        return board;
+    }
+
+    public Player[] getPlayers()
+    {
+        return players;
+    }
+
+    public List<GameStatus> getGameHistory()
+    {
+        return gameHistory;
+    }
+
+    //TODO undoLastMove > va in GameManager? > prob. sì visto che c'è da annullare una move e serve l'analyzer
+    //TODO redoLastMove > va in GameManager? > prob. sì visto che c'è da fare una move e serve l'analyzer
 }

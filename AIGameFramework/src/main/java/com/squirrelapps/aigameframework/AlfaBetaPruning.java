@@ -3,7 +3,7 @@ package com.squirrelapps.aigameframework;
 import java.util.Iterator;
 
 /**
- * Created by Francesco Vadicamo on 9/21/13.
+ * Copyright (C) 2013 Francesco Vadicamo.
  */
 public class AlfaBetaPruning extends SearchAlgorithm
 {
