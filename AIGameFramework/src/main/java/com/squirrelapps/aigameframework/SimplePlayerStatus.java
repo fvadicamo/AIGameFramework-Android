@@ -1,11 +1,10 @@
 package com.squirrelapps.aigameframework;
 
-import java.util.HashMap;
+import org.apache.http.client.utils.CloneUtils;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
@@ -25,27 +24,30 @@ public class SimplePlayerStatus implements PlayerStatus, Cloneable
     /* (non-Javadoc)
      * @see java.lang.Object#clone()
      */
-    protected Object clone() throws CloneNotSupportedException
+    public Object clone() throws CloneNotSupportedException
     {
-        SimplePlayerStatus ps = new SimplePlayerStatus();
-        Map<Piece, Cell> newCellsMap;
-        if(cellsMap instanceof HashMap) //TODO semplificare o usare reflection
-            newCellsMap = (Map<Piece, Cell>)( (HashMap<Piece, Cell>)cellsMap ).clone();
-        else if(cellsMap instanceof TreeMap)
-            newCellsMap = (Map<Piece, Cell>)( (TreeMap<Piece, Cell>)cellsMap ).clone();
-        else
-            newCellsMap = new HashMap<Piece, Cell>(cellsMap);
+        final SimplePlayerStatus ps = (SimplePlayerStatus)super.clone();
 
-        Set<Piece> newAvailablePieces;
-        if(availablePieces instanceof HashSet) //TODO semplificare o usare reflection
-            newAvailablePieces = (Set<Piece>)( (HashSet<Piece>)availablePieces ).clone();
-        else if(availablePieces instanceof TreeSet)
-            newAvailablePieces = (Set<Piece>)( (TreeSet<Piece>)availablePieces ).clone();
-        else
-            newAvailablePieces = new HashSet<Piece>(availablePieces);
+        final Map<Piece, Cell> cm;
+//        if(cellsMap instanceof HashMap)
+//            cm = (Map<Piece, Cell>)( (HashMap<Piece, Cell>)cellsMap ).clone();
+//        else if(cellsMap instanceof TreeMap)
+//            cm = (Map<Piece, Cell>)( (TreeMap<Piece, Cell>)cellsMap ).clone();
+//        else
+//            cm = new HashMap<Piece, Cell>(cellsMap);
+        cm = (Map<Piece, Cell>)CloneUtils.clone(this.cellsMap);
+        ps.setCellsMap(cm);
 
-        ps.setAvailablePieces(newAvailablePieces);
-        ps.setCellsMap(newCellsMap);
+        final Set<Piece> ap;
+//        if(availablePieces instanceof HashSet)
+//            ap = (Set<Piece>)( (HashSet<Piece>)availablePieces ).clone();
+//        else if(availablePieces instanceof TreeSet)
+//            ap = (Set<Piece>)( (TreeSet<Piece>)availablePieces ).clone();
+//        else
+//            ap = new HashSet<Piece>(availablePieces);
+        ap = (Set<Piece>)CloneUtils.clone(this.availablePieces);
+        ps.setAvailablePieces(ap);
+
 //        ps.setAlive(alive);
 //        ps.setLifes(lifes);
 //        ps.setPenalities(penalities);
@@ -58,11 +60,12 @@ public class SimplePlayerStatus implements PlayerStatus, Cloneable
      */
     public boolean equals(Object obj)
     {
-        if(obj == null || !(obj instanceof SimplePlayerStatus))
-            return false;
-
-        if(obj == this)
+        if(obj == this){
             return true;
+        }
+        if(obj == null || !(obj instanceof SimplePlayerStatus)){
+            return false;
+        }
 
         SimplePlayerStatus ps = (SimplePlayerStatus)obj;
         return ps.getAvailablePieces().equals(getAvailablePieces()) && ps.getCellsMap().equals(getCellsMap());

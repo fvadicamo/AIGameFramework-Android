@@ -5,4 +5,5 @@ package com.squirrelapps.aigameframework;
  */
 public interface PlayerStatus
 {
+    public Object clone() throws CloneNotSupportedException;
 }

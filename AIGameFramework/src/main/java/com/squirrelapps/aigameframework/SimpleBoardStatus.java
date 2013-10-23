@@ -1,11 +1,10 @@
 package com.squirrelapps.aigameframework;
 
-import java.util.HashMap;
+import org.apache.http.client.utils.CloneUtils;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
@@ -26,27 +25,32 @@ public class SimpleBoardStatus implements BoardStatus, Cloneable
      * @see java.lang.Object#clone()
      */
     @Override
-    protected Object clone() throws CloneNotSupportedException
+    public Object clone() throws CloneNotSupportedException
     {
-        SimpleBoardStatus bs = new SimpleBoardStatus(); //(SimpleBoardStatus)super.clone();
-        Map<Cell, Piece> newPiecesMap;
-        if(piecesMap instanceof HashMap) //TODO semplificare o usare reflection
-            newPiecesMap = (Map<Cell, Piece>)( (HashMap<Cell, Piece>)piecesMap ).clone();
-        else if(piecesMap instanceof TreeMap)
-            newPiecesMap = (Map<Cell, Piece>)( (TreeMap<Cell, Piece>)piecesMap ).clone();
-        else
-            newPiecesMap = new HashMap<Cell, Piece>(piecesMap);
+        final SimpleBoardStatus bs = (SimpleBoardStatus)super.clone();
 
-        Set<Cell> newAvailableCells;
-        if(availableCells instanceof HashSet) //TODO semplificare o usare reflection
-            newAvailableCells = (Set<Cell>)( (HashSet<Cell>)availableCells ).clone();
-        else if(availableCells instanceof TreeSet)
-            newAvailableCells = (Set<Cell>)( (TreeSet<Cell>)availableCells ).clone();
-        else
-            newAvailableCells = new HashSet<Cell>(availableCells);
+        //REMIND Second statement of clone() suggest that original and cloned objects should have same class type, but it is not mandatory
+        final Map<Cell, Piece> pm;
+//        if(piecesMap instanceof HashMap)
+//            pm = (Map<Cell, Piece>)( (HashMap<Cell, Piece>)piecesMap ).clone();
+//        else if(piecesMap instanceof TreeMap)
+//            pm = (Map<Cell, Piece>)( (TreeMap<Cell, Piece>)piecesMap ).clone();
+//        else
+//            pm = new HashMap<Cell, Piece>(piecesMap);
+        pm = (Map<Cell, Piece>)CloneUtils.clone(this.piecesMap);
+        bs.setPiecesMap(pm);
 
-        bs.setPiecesMap(newPiecesMap);
-        bs.setAvailableCells(newAvailableCells);
+        //REMIND Second statement of clone() suggest that original and cloned objects should have same class type, but it is not mandatory
+        final Set<Cell> ac;
+//        if(availableCells instanceof HashSet)
+//            ac = (Set<Cell>)( (HashSet<Cell>)availableCells ).clone();
+//        else if(availableCells instanceof TreeSet)
+//            ac = (Set<Cell>)( (TreeSet<Cell>)availableCells ).clone();
+//        else
+//            ac = new HashSet<Cell>(availableCells);
+        ac = (HashSet<Cell>)CloneUtils.clone(this.availableCells);
+        bs.setAvailableCells(ac);
+
         return bs;
     }
 
@@ -56,11 +60,12 @@ public class SimpleBoardStatus implements BoardStatus, Cloneable
     @Override
     public boolean equals(Object obj)
     {
-        if( obj == null || !(obj instanceof SimpleBoardStatus) )
-            return false;
-
-        if( obj == this )
+        if(obj == this){
             return true;
+        }
+        if(obj == null || !(obj instanceof SimpleBoardStatus)){
+            return false;
+        }
 
         SimpleBoardStatus bs = (SimpleBoardStatus)obj;
         return bs.getAvailableCells().equals(availableCells) && bs.getPiecesMap().equals(piecesMap);

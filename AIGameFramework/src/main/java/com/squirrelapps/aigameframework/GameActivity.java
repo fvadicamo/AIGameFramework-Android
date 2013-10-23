@@ -35,7 +35,7 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
         gameBuilder.buildBoard(8, 8);
         //TODO valutare l'uso di gameBuilder.buildPlayers() altrimenti attenzione all'ordine
         gameBuilder.buildHumanPlayer("Human");
-        gameBuilder.buildCPUPlayer("CPU", null /*FIXME new AlfaBetaPruning()*/, 3/*TODO retrieve it from settings*/);
+        gameBuilder.buildComputerPlayer("CPU", null /*FIXME new AlfaBetaPruning()*/, 3/*TODO retrieve it from settings*/);
         gameBuilder.buildFirsGameStatus(0);
         Game game = gameBuilder.getGame();
 
@@ -128,6 +128,7 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
     {
         //TODO on click...
         new AsyncTask<Game, GameStatus, GameStatus>(){
+
             @Override
             protected void onPreExecute()
             {
@@ -149,14 +150,14 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
     }
 
     @Override
-    public boolean onGameCreate(Game game)
+    public boolean onGameCreate(Game game, GameManager.GameRunnerState gameRunnerState)
     {
         //TODO onGameCreate
         return false;
     }
 
     @Override
-    public boolean onGameUpdate(Game game)
+    public boolean onGameUpdate(Game game, GameManager.GameRunnerState gameRunnerState)
     {
         //TODO onGameUpdate
         return false;

@@ -11,7 +11,7 @@ public interface GameBuilder
 
     //public GameBuilder buildPlayer(/*int type, */String name);
     public GameBuilder buildHumanPlayer(String name);
-    public GameBuilder buildCPUPlayer(String name, SearchAlgorithm searchAlgorithm, int maxDept);
+    public GameBuilder buildComputerPlayer(String name, SearchAlgorithm searchAlgorithm, int maxDept);
 
     public GameBuilder buildFirsGameStatus(int firstPlayerId);
 }

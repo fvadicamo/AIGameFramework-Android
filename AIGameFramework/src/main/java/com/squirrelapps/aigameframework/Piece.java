@@ -12,11 +12,11 @@ public abstract class Piece //TODO implements Cloneable
         this.id = id;
     }
 
-//    @Override
-//    protected Object clone() throws CloneNotSupportedException
-//    {
-//        return super.clone();
-//    }
+    @Override
+    public Object clone() throws CloneNotSupportedException
+    {
+        return (Piece)super.clone();
+    }
 
     @Override
     public boolean equals(Object o)

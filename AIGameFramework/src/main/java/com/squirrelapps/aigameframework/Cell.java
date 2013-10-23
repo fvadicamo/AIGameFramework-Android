@@ -21,14 +21,20 @@ public class Cell implements Cloneable, Comparable<Cell>
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException
+    public Object clone() throws CloneNotSupportedException
     {
-        return new Cell(/*this*/x, y);
+        //REMIND By convention, the returned object should be obtained by calling super.clone
+        //return new Cell(/*this*/x, y);
+
+        //REMIND If a class contains only primitive fields or references to immutable objects,
+        // then it is usually the case that no fields in the object returned by super.clone need to be modified
+        return (Cell)super.clone();
     }
 
     @Override
     public boolean equals(Object o)
     {
+        //TODO uniformare agli altri equals
         try{
             Cell c = (Cell)o;
             return this.x == c.x && this.y == c.y;
