@@ -5,10 +5,12 @@ package com.squirrelapps.aigameframework;
  */
 public abstract class Player
 {
+    final int id;
     final String name;
 
-    public Player(String name)
+    public Player(int id, String name)
     {
+        this.id = id;
         this.name = name;
     }
 

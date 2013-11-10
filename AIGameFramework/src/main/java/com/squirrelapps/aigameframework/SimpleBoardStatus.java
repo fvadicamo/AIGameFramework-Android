@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
  */
-public class SimpleBoardStatus implements BoardStatus, Cloneable
+public class SimpleBoardStatus implements BoardStatus//, Cloneable
 {
     /** Available board cells*/
     protected Set<Cell> availableCells;

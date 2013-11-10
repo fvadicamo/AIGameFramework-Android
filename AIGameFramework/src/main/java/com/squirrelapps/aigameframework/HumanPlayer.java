@@ -1,13 +1,15 @@
 package com.squirrelapps.aigameframework;
 
+import java.util.Collection;
+
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
  */
 public class HumanPlayer extends Player
 {
-    public HumanPlayer(String name)
+    public HumanPlayer(int id, String name)
     {
-        super(name);
+        super(id, name);
     }
 
     @Override
@@ -17,11 +19,20 @@ public class HumanPlayer extends Player
         try{
             newGameStatus = (GameStatus)gameStatus.clone(); //TODO il clone potrebbe essere fatto a monte, dal chiamante di makeMove
         }catch(CloneNotSupportedException e){
-            throw new IllegalStateException("GameStatus not clonable!"); //TODO check...
+            throw new IllegalStateException("GameStatus not clonable"); //TODO check...
         }
 
+        Collection<? extends Move> moves = gameAnalyzer.playableMoves(newGameStatus, id);
         //playable moves.. le notifica e sceglie una tra quelle col tap
 
-        return newGameStatus;
+        try{
+            Thread.sleep(5000l);
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+
+        int random = (int)(Math.random()*moves.size());
+
+        return gameAnalyzer.makeMove(newGameStatus, moves.toArray(new Move[moves.size()])[random]);
     }
 }

@@ -15,21 +15,33 @@ public abstract class Board
     protected final int yDim;
     protected final int size;
 
+    //TODO sarebbe meglio utilizzare un array monodimensionale (in questo modo sarebbe estendibile ad n dimensioni)
     protected final Cell[][] cells;
 
     public Board(final int xDim, final int yDim)
+    {
+        this(new Cell[xDim][yDim], xDim, yDim);
+
+        for(int x=0; x<xDim; x++){
+            for(int y=0; y<yDim; y++){
+                cells[x][y] = new Cell(x, y);
+            }
+        }
+    }
+
+    public Board(Cell[][] cells)
+    {
+        this(cells, cells.length, cells[0].length);
+    }
+
+    public Board(Cell[][] cells, final int xDim, final int yDim)
     {
         this.xDim = xDim;
         this.yDim = yDim;
 
         this.size = xDim*yDim;
 
-        this.cells = new Cell[xDim][yDim];
-        for(int x=0; x<xDim; x++){
-            for(int y=0; y<yDim; y++){
-                cells[x][y] = new Cell(x, y);
-            }
-        }
+        this.cells = cells;
     }
 
     public int getSize()

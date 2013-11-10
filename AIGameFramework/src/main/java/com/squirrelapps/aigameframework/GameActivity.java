@@ -32,10 +32,9 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
         //FIXME testing OthiGame > TO REMOVE!
         //REMEMBER GameActivity fa da Director del pattern GoF Builder (valutare altrimenti la creazione di una classe apposita)
         GameBuilder gameBuilder = new OthiGameBuilder(); //TODO gli vanno passati i settings che gli servono
-        gameBuilder.buildBoard(8, 8);
-        //TODO valutare l'uso di gameBuilder.buildPlayers() altrimenti attenzione all'ordine
-        gameBuilder.buildHumanPlayer("Human");
-        gameBuilder.buildComputerPlayer("CPU", null /*FIXME new AlfaBetaPruning()*/, 3/*TODO retrieve it from settings*/);
+        gameBuilder.buildBoard(/*OthiGameRules.X_DIM, OthiGameRules.Y_DIM*/);
+        gameBuilder.buildHumanPlayer(0, "Human");
+        gameBuilder.buildComputerPlayer(1, "CPU", null /*FIXME new AlfaBetaPruning()*/, 3/*TODO retrieve it from settings*/);
         gameBuilder.buildFirsGameStatus(0);
         Game game = gameBuilder.getGame();
 
@@ -149,12 +148,12 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
         };
     }
 
-    @Override
-    public boolean onGameCreate(Game game, GameManager.GameRunnerState gameRunnerState)
-    {
-        //TODO onGameCreate
-        return false;
-    }
+//    @Override
+//    public boolean onGameCreate(Game game, GameManager.GameRunnerState gameRunnerState)
+//    {
+//        //TODO onGameCreate
+//        return false;
+//    }
 
     @Override
     public boolean onGameUpdate(Game game, GameManager.GameRunnerState gameRunnerState)

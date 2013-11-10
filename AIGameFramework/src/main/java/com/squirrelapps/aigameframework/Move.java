@@ -3,36 +3,42 @@ package com.squirrelapps.aigameframework;
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
  */
-public class Move implements Cloneable
+public class Move/*<T extends Enum>*/ implements Cloneable
 {
-    final String name;
+    //public static final Move NO_MOVE = new Move(0);
 
-    public Move(String name)
+    protected final int id;
+
+//    final T type;
+
+//    final String name;
+
+    public Move(int id/*, T type*/)
     {
-        this.name = name;
+        this.id = id;
+
+//        this.type = type;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
     @Override
     public Object clone() throws CloneNotSupportedException
     {
-        final Move m = (Move)super.clone();
-        //TODO clone()...
-
-        return m;
+        return (Move)super.clone();
     }
 
     @Override
     public boolean equals(Object o)
     {
-        if(this == o) return true;
-        if(!(o instanceof Move)) return false;
+        if(this == o)
+            return true;
+
+        if(!(o instanceof Move))
+            return false;
 
         Move move = (Move) o;
 
-        if(!name.equals(move.name)) return false;
+        if(id != move.id)
+            return false;
 
         return true;
     }
@@ -40,6 +46,12 @@ public class Move implements Cloneable
     @Override
     public int hashCode()
     {
-        return name.hashCode();
+        return id;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new StringBuilder(Move.class.getSimpleName()).append('(').append(id).append(')').toString();
     }
 }

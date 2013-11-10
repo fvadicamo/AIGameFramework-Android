@@ -9,16 +9,19 @@ import java.util.Set;
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
  */
-public class SimplePlayerStatus implements PlayerStatus, Cloneable
+public class SimplePlayerStatus implements PlayerStatus//, Cloneable
 {
+    //protected final int playerId;
+
     /** Available player pieces*/
     protected Set<Piece> availablePieces;
 
     /**Cell mapping foreach piece*/
     protected Map<Piece, Cell> cellsMap;
 
-    public SimplePlayerStatus()
+    public SimplePlayerStatus(/*final int playerId*/)
     {
+        //this.playerId = playerId;
     }
 
     /* (non-Javadoc)
@@ -48,10 +51,6 @@ public class SimplePlayerStatus implements PlayerStatus, Cloneable
         ap = (Set<Piece>)CloneUtils.clone(this.availablePieces);
         ps.setAvailablePieces(ap);
 
-//        ps.setAlive(alive);
-//        ps.setLifes(lifes);
-//        ps.setPenalities(penalities);
-
         return ps;
     }
 
@@ -71,13 +70,13 @@ public class SimplePlayerStatus implements PlayerStatus, Cloneable
         return ps.getAvailablePieces().equals(getAvailablePieces()) && ps.getCellsMap().equals(getCellsMap());
     }
 
-
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
     public int hashCode()
     {
         int result = 1;
+        //result = 31 * result + playerId;
         result = 31 * result + availablePieces.hashCode();
         result = 31 * result + cellsMap.hashCode();
 
@@ -124,9 +123,9 @@ public class SimplePlayerStatus implements PlayerStatus, Cloneable
     }
 
     /**
-     * Return all cells occupied by players
+     * Return all cells occupied by player
      *
-     * @return set of cells occupied by players
+     * @return set of cells occupied by player
      */
     public Set<Cell> playedCells()
     {

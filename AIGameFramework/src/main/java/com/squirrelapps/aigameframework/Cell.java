@@ -34,13 +34,25 @@ public class Cell implements Cloneable, Comparable<Cell>
     @Override
     public boolean equals(Object o)
     {
-        //TODO uniformare agli altri equals
-        try{
-            Cell c = (Cell)o;
-            return this.x == c.x && this.y == c.y;
-        }catch(Exception e){
+        if(this == o)
+            return true;
+        if(!(o instanceof Cell))
             return false;
-        }
+
+        Cell cell = (Cell) o;
+
+        if(x != cell.x || y != cell.y)
+            return false;
+
+        return true;
+
+        //TODO <PERFORMANCE> better performance using try/catch..
+//        try{
+//            Cell c = (Cell)o;
+//            return this.x == c.x && this.y == c.y;
+//        }catch(Exception e){
+//            return false;
+//        }
     }
 
     @Override

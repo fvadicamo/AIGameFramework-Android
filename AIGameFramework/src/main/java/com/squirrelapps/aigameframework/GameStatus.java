@@ -88,6 +88,8 @@ public /*abstract*/ class GameStatus implements Cloneable //Parcelable
         }
         gs.playersStatus = pss;
 
+        //TODO altro?!
+
         return gs;
     }
 

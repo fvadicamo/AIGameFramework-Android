@@ -14,15 +14,15 @@ public abstract class GameAnalyzer
         this.game = game;
     }
 
-    public abstract byte[] firstGameStatus(); //TODO andrebbe forse spostato in Game[Status]Builder
-
     public abstract int currentPlayer(byte[] gameStatus);
     public abstract int nextPlayer(byte[] gameStatus);
 
 //    public abstract Collection<byte[]> currentPlayableMoves(byte[] gameStatus);
 
+    public abstract Collection<? extends Move> playableMoves(GameStatus gameStatus, int playerId);
     public abstract Collection<byte[]> playableMoves(byte[] gameStatus, int playerId);
 
+    public abstract GameStatus makeMove(GameStatus gameStatus, Move move);
     public abstract byte[] makeMove(byte[] gameStatus, byte[] move);
 
     //public abstract int[] playerScores();

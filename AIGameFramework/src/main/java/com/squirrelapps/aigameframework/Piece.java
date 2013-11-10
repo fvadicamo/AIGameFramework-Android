@@ -3,7 +3,7 @@ package com.squirrelapps.aigameframework;
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
  */
-public abstract class Piece //TODO implements Cloneable
+public abstract class Piece implements Cloneable
 {
     protected final int id;
 
@@ -21,7 +21,18 @@ public abstract class Piece //TODO implements Cloneable
     @Override
     public boolean equals(Object o)
     {
-        return (o instanceof Piece) && (((Piece) o).id == id);
+        if(this == o)
+            return true;
+
+        if(!(o instanceof Piece))
+            return false;
+
+        Piece piece = (Piece) o;
+
+        if(id != piece.id)
+            return false;
+
+        return true;
     }
 
     @Override

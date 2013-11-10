@@ -27,6 +27,11 @@ public class SquareBoard extends Board
         super(xDim, yDim);
     }
 
+    public SquareBoard(Cell[][] cells)
+    {
+        super(cells, cells.length, cells[0].length);
+    }
+
     private void insertCellIfValidPosition(int x, int y, Set<Cell> cellSet)
     {
         if(isValidPosition(x, y)){

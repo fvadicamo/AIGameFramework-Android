@@ -8,13 +8,13 @@ public final class GameManager implements Runnable
     public static enum GameRunnerState{
         Ready,
         Playing,
-        //Paused,
+        Paused,
         Stopped,
     }
 
     // Container Activity must implement this interface
     public interface GameListener {
-        public boolean onGameCreate(Game game, GameRunnerState gameRunnerState);
+//        public boolean onGameCreate(Game game, GameRunnerState gameRunnerState);
         public boolean onGameUpdate(Game game, GameRunnerState gameRunnerState);
     }
 
@@ -65,30 +65,52 @@ public final class GameManager implements Runnable
     {
         //TODO start GameRunner and notify
         if(gameRunner != null && gameRunner.isAlive()){
-            throw new IllegalStateException("Game already started!"); //TODO custom exception
+            throw new IllegalStateException("Game already started"); //TODO custom exception
         }
-        gameRunner = new Thread(this, "GameRunner");
-        //TODO set thread priority
-        gameRunnerState = GameRunnerState.Ready;
-        gameListener.onGameCreate(game, gameRunnerState);
+
+        synchronized(game){
+            gameRunner = new Thread(this, "GameRunner");
+            //TODO set thread priority
+            gameRunnerState = GameRunnerState.Ready;
+//            gameListener.onGameCreate(game, gameRunnerState);
+
+            gameRunner.start();
+        }
         return this;
     }
 
     public GameManager resumeGame()
     {
-        //TODO resume GameRunner and notify
+        synchronized(game){
+            if(gameRunnerState == GameRunnerState.Paused){
+                gameRunnerState = GameRunnerState.Playing;
+            }
+            game.notifyAll();
+        }
         return this;
     }
 
     public GameManager pauseGame()
     {
-        //TODO pause GameRunner and notify
+        synchronized(game){
+            if(gameRunnerState == GameRunnerState.Playing){
+                gameRunnerState = GameRunnerState.Paused;
+            }
+            game.notifyAll();
+        }
         return this;
     }
 
     public GameManager stopGame()
     {
-        //TODO stop GameRunner and notify
+        synchronized(game){
+            if(gameRunnerState != GameRunnerState.Stopped){
+                gameRunnerState = GameRunnerState.Stopped;
+            }
+            game.notifyAll();
+
+            gameRunner.interrupt();
+        }
         return this;
     }
 
@@ -110,7 +132,13 @@ public final class GameManager implements Runnable
 //                        game.wait();
 //                    }
 
+                    gameListener.onGameUpdate(game, gameRunnerState);
+
                     switch(gameRunnerState){
+                        case Ready:
+                            gameRunnerState = GameRunnerState.Playing;
+                            break;
+
                         case Playing:
                             playerId = gameStatus.getNextPlayer();
                             player = game.players[playerId];
@@ -123,10 +151,14 @@ public final class GameManager implements Runnable
 
                             game.gameHistory.add(gameStatus);
 
-                            gameListener.onGameUpdate(game, GameRunnerState.Playing);
+//                            gameListener.onGameUpdate(game, GameRunnerState.Playing);
 
                             //...gameStatus.moveNumber;
                             break;
+
+                        case Stopped:
+                            throw new InterruptedException("GameRunner has been stopped");
+                            //break;
 
                         default:
                             game.wait();
@@ -144,6 +176,7 @@ public final class GameManager implements Runnable
             //TODO winnePlayers = null;
         }finally{
             //TODO finally...
+            gameListener.onGameUpdate(game, gameRunnerState);
         }
     }
 }
