@@ -3,12 +3,16 @@ package com.squirrelapps.aigameframework;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import java.util.Map;
 
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
@@ -17,8 +21,25 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
 {
     private static final String TAG = GameActivity.class.getSimpleName();
 
+    /** Game Update Message */
+    private static final int MESSAGE_GAME_UPDATE = 1;
+
     protected GameManager gameManager;
 //    protected Game game;
+
+    protected BoardFragment boardFragment;
+
+    /** {@link Handler} for executing messages on the activity main thread. */
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message message) {
+            switch (message.what) {
+                case MESSAGE_GAME_UPDATE:
+                    handleGameUpdate((Game)message.obj);
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -29,12 +50,23 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
 
         //TODO recuperare il game da savedInstanceState e solo se null crearlo
 
+        /*
+        // Create the board fragment and add it as our sole content.
+        //if (savedInstanceState == null) {
+        if (getSupportFragmentManager().findFragmentById(android.R.id.content) == null) {
+            BoardFragment bf = BoardFragment.newInstance(xDim, yDim);
+            getSupportFragmentManager().beginTransaction().add(android.R.id.content, bf).commit();
+        }
+        */
+
+        boardFragment = (BoardFragment)getSupportFragmentManager().findFragmentById(R.id.boardFragment);
+
         //FIXME testing OthiGame > TO REMOVE!
         //REMEMBER GameActivity fa da Director del pattern GoF Builder (valutare altrimenti la creazione di una classe apposita)
         GameBuilder gameBuilder = new OthiGameBuilder(); //TODO gli vanno passati i settings che gli servono
         gameBuilder.buildBoard(/*OthiGameRules.X_DIM, OthiGameRules.Y_DIM*/);
         gameBuilder.buildHumanPlayer(0, "Human");
-        gameBuilder.buildComputerPlayer(1, "CPU", null /*FIXME new AlfaBetaPruning()*/, 3/*TODO retrieve it from settings*/);
+        gameBuilder.buildComputerPlayer(1, "CPU", null /*FIXME new AlfaBetaPruning()*/, 3/*TODO retrieve maxDepth from settings*/);
         gameBuilder.buildFirsGameStatus(0);
         Game game = gameBuilder.getGame();
 
@@ -117,7 +149,7 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
             btn.setTextColor(Color.WHITE);
         }
 
-        btn.setText(/*board.cells[x][y].toString()*/"*");
+        //btn.setText(/*board.cells[x][y].toString()*/"*");
 
         return true;
     }
@@ -156,9 +188,27 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
 //    }
 
     @Override
-    public boolean onGameUpdate(Game game, GameManager.GameRunnerState gameRunnerState)
+    public void onGameUpdate(Game game, GameManager.GameRunnerState gameRunnerState)
     {
-        //TODO onGameUpdate
-        return false;
+        assert(game != null):"Game cannot be null";
+        handler.obtainMessage(MESSAGE_GAME_UPDATE, game).sendToTarget();
+    }
+
+    private void handleGameUpdate(Game game)
+    {
+        //FIXME testing OthiGame > TO REMOVE > we know that boardStatus is instanceof SimpleBoardStatus
+        SimpleBoardStatus sbs = (SimpleBoardStatus)game.gameHistory.getLast().boardStatus;
+        Map<Cell, Piece> piecesMap = sbs.piecesMap;
+
+        Piece p;
+        Button boardButtons[][] = boardFragment.boardButtons;
+        for(Cell c : sbs.allCells()){
+            p = piecesMap.get(c);
+            if(p != null){
+                boardButtons[c.x][c.y].setText((p.id < 64)?"0":"1"); //FIXME test OthiGame
+            }else{
+                boardButtons[c.x][c.y].setText("");
+            }
+        }
     }
 }

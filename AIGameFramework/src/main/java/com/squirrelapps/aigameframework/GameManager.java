@@ -14,8 +14,8 @@ public final class GameManager implements Runnable
 
     // Container Activity must implement this interface
     public interface GameListener {
-//        public boolean onGameCreate(Game game, GameRunnerState gameRunnerState);
-        public boolean onGameUpdate(Game game, GameRunnerState gameRunnerState);
+//        public void onGameCreate(Game game, GameRunnerState gameRunnerState);
+        public void onGameUpdate(Game game, GameRunnerState gameRunnerState);
     }
 
     final Game game;
