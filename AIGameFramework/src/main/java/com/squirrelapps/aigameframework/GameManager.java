@@ -1,5 +1,8 @@
 package com.squirrelapps.aigameframework;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
  */
@@ -25,6 +28,9 @@ public final class GameManager implements Runnable
 
     Thread gameRunner;
     GameRunnerState gameRunnerState;
+
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition condition = lock.newCondition();
 
 //    private static GameManager instance;
 //
@@ -68,48 +74,66 @@ public final class GameManager implements Runnable
             throw new IllegalStateException("Game already started"); //TODO custom exception
         }
 
-        synchronized(game){
+//        synchronized(game){
+        lock.lock();
+        try{
             gameRunner = new Thread(this, "GameRunner");
             //TODO set thread priority
             gameRunnerState = GameRunnerState.Ready;
 //            gameListener.onGameCreate(game, gameRunnerState);
 
             gameRunner.start();
+        }finally{
+            lock.unlock();
         }
         return this;
     }
 
     public GameManager resumeGame()
     {
-        synchronized(game){
+//        synchronized(game){
+        lock.lock();
+        try{
             if(gameRunnerState == GameRunnerState.Paused){
                 gameRunnerState = GameRunnerState.Playing;
             }
-            game.notifyAll();
+//            game.notifyAll();
+            condition.signalAll();
+        }finally{
+            lock.unlock();
         }
         return this;
     }
 
     public GameManager pauseGame()
     {
-        synchronized(game){
+//        synchronized(game){
+        lock.lock();
+        try{
             if(gameRunnerState == GameRunnerState.Playing){
                 gameRunnerState = GameRunnerState.Paused;
             }
-            game.notifyAll();
+//            game.notifyAll();
+            condition.signalAll();
+        }finally{
+            lock.unlock();
         }
         return this;
     }
 
     public GameManager stopGame()
     {
-        synchronized(game){
+        lock.lock();
+        try{
             if(gameRunnerState != GameRunnerState.Stopped){
                 gameRunnerState = GameRunnerState.Stopped;
             }
-            game.notifyAll();
+//            game.notifyAll();
+            condition.signalAll();
 
             gameRunner.interrupt();
+        }finally{
+            lock.unlock();
         }
         return this;
     }
@@ -127,7 +151,9 @@ public final class GameManager implements Runnable
             int playerId;
             Player player;
             while(!gameStatus.isGameOver() /*!gameAnalyzer.isFinalGameStatus(gameStatusCoded)*/ && !gameRunner.isInterrupted()){
-                synchronized(game){
+//                synchronized(game){
+                lock.lock();
+                try{
 //                    while(gameRunnerState != GameRunnerState.Playing){
 //                        game.wait();
 //                    }
@@ -143,7 +169,9 @@ public final class GameManager implements Runnable
                             playerId = gameStatus.getNextPlayer();
                             player = game.players[playerId];
 
+                            lock.unlock();
                             gameStatus = player.makeMove(gameAnalyzer, gameStatus); //blocking call
+                            lock.lock();
 
                             //TODO andrebbe effettuato un check sul nuovo gameStatus
 
@@ -161,9 +189,12 @@ public final class GameManager implements Runnable
                             //break;
 
                         default:
-                            game.wait();
+//                            game.wait();
+                            condition.await();
                             break;
                     }
+                }finally{
+                    lock.unlock();
                 }
             }
 
