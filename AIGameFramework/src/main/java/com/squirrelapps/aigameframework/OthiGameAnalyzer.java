@@ -24,6 +24,15 @@ public class OthiGameAnalyzer extends GameAnalyzer
 //    public static final int Y_DIM = 8;
 //    public static final int PLAYERS_NUM = 2;
 
+    public final static int iE = 0;
+    public final static int iNE = 1;
+    public final static int iN = 2;
+    public final static int iNW = 3;
+    public final static int iW = 4;
+    public final static int iSW = 5;
+    public final static int iS = 6;
+    public final static int iSE = 7;
+
     //CODED_GAME_STATUS = GAME_STATUS_MOVENUMBER | GAME_STATUS_MOVE | GAME_STATUS_PLAYER0 | GAME_STATUS_PLAYER1
 
     protected static final int CODED_MOVENUMBER_SIZE = 1; //almost 64 moves
@@ -254,6 +263,71 @@ public class OthiGameAnalyzer extends GameAnalyzer
         gs.setBoardStatus(boardStatus);
 
         return gs;
+    }
+
+    protected boolean[] possibleCell(byte[] gameStatus, int currPlayer, int nextPlayer, int column, int row)
+    {
+        int i, j;
+
+        int curr_begin = (currPlayer == 0)?GAME_STATUS_PLAYER0_OFFSET :GAME_STATUS_PLAYER1_OFFSET;
+        int next_begin = (nextPlayer == 0)?GAME_STATUS_PLAYER0_OFFSET :GAME_STATUS_PLAYER1_OFFSET;
+
+        boolean direction[] = new boolean[8];
+
+        if((gameStatus[curr_begin + row] & (1 << (7 - column))) != 0 || (gameStatus[next_begin + row] & (1 << (7 - column))) != 0){    //cella non vuota
+            return direction;
+        }else{
+            if(column > 1 && (gameStatus[next_begin + row] & (1 << (7 - column + 1))) != 0){
+                for(i = column - 2; i > 0 && (gameStatus[next_begin + row] & (1 << (7 - i))) != 0; i--)
+                    ;
+                if((gameStatus[curr_begin + row] & (1 << (7 - i))) != 0)
+                    direction[iW] = true;
+            }
+            if(column < 6 && (gameStatus[next_begin + row] & (1 << (7 - column - 1))) != 0){
+                for(i = column + 2; i < 7 && (gameStatus[next_begin + row] & (1 << (7 - i))) != 0; i++)
+                    ;
+                if((gameStatus[curr_begin + row] & (1 << (7 - i))) != 0)
+                    direction[iE] = true;
+            }
+            if(row > 1 && (gameStatus[next_begin + row - 1] & (1 << (7 - column))) != 0){
+                for(j = row - 2; j > 0 && (gameStatus[next_begin + j] & (1 << (7 - column))) != 0; j--)
+                    ;
+                if((gameStatus[curr_begin + j] & (1 << (7 - column))) != 0)
+                    direction[iN] = true;
+            }
+            if(row < 6 && (gameStatus[next_begin + row + 1] & (1 << (7 - column))) != 0){
+                for(j = row + 2; j < 7 && (gameStatus[next_begin + j] & (1 << (7 - column))) != 0; j++)
+                    ;
+                if((gameStatus[curr_begin + j] & (1 << (7 - column))) != 0)
+                    direction[iS] = true;
+            }
+            if(column > 1 && row > 1 && (gameStatus[next_begin + row - 1] & (1 << (7 - column + 1))) != 0){
+                for(i = column - 2, j = row - 2; i > 0 && j > 0 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i--, j--)
+                    ;
+                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0)
+                    direction[iNW] = true;
+            }
+            if(column < 6 && row > 1 && (gameStatus[next_begin + row - 1] & (1 << (7 - column - 1))) != 0){
+                for(i = column + 2, j = row - 2; i < 7 && j > 0 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i++, j--)
+                    ;
+                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0)
+                    direction[iNE] = true;
+            }
+            if(column < 6 && row < 6 && (gameStatus[next_begin + row + 1] & (1 << (7 - column - 1))) != 0){
+                for(i = column + 2, j = row + 2; i < 7 && j < 7 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i++, j++)
+                    ;
+                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0)
+                    direction[iSE] = true;
+            }
+            if(column > 1 && row < 6 && (gameStatus[next_begin + row + 1] & (1 << (7 - column + 1))) != 0){
+                for(i = column - 2, j = row + 2; i > 0 && j < 7 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i--, j++)
+                    ;
+                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0)
+                    direction[iSW] = true;
+            }
+
+            return direction;
+        }
     }
 
     protected boolean isPlayableCell(byte[] gameStatus, int currPlayer, int nextPlayer, int column, int row)
@@ -649,7 +723,87 @@ public class OthiGameAnalyzer extends GameAnalyzer
     @Override
     public byte[] makeMove(byte[] gameStatus, byte[] move)
     {
-        return gameStatus; //TODO makeMove...
+        byte[] nextGameStatus = new byte[CODED_MOVENUMBER_SIZE + CODED_MOVE_SIZE + CODED_PLAYER_SIZE*OthiGameRules.PLAYERS_NUM];
+
+        nextGameStatus[GAME_STATUS_MOVENUMBER_OFFSET] = (byte)(gameStatus[GAME_STATUS_MOVENUMBER_OFFSET] + 1);
+
+        System.arraycopy(move, 0, nextGameStatus, GAME_STATUS_MOVE_OFFSET, CODED_MOVE_SIZE);
+
+//        for(int playerId = 0; playerId < OthiGameRules.PLAYERS_NUM; playerId++){
+//            System.arraycopy(gameStatus, GAME_STATUS_PLAYERS_OFFSET[playerId], coded, GAME_STATUS_PLAYERS_OFFSET[playerId], CODED_PLAYER_SIZE);
+//        }
+        System.arraycopy(gameStatus, GAME_STATUS_PLAYERS_OFFSET[0], nextGameStatus, GAME_STATUS_PLAYERS_OFFSET[0], CODED_PLAYER_SIZE*OthiGameRules.PLAYERS_NUM);
+
+        if(!Arrays.equals(move, CODED_MOVE_NONE)){
+            OthiMove m = (OthiMove)OthiGame.move(move[CODED_MOVE_ID_INDEX]);
+
+            int currPlayer, nextPlayer, curr_begin, next_begin;
+
+            if((nextGameStatus[GAME_STATUS_MOVENUMBER_OFFSET] & 1) == 1){ //TODO utilizzare OthiGame.nextPlayerAtMove
+                currPlayer = 0;
+                nextPlayer = 1;
+                curr_begin = GAME_STATUS_PLAYER0_OFFSET;
+                next_begin = GAME_STATUS_PLAYER1_OFFSET;
+            }else{
+                currPlayer = 1;
+                nextPlayer = 0;
+                curr_begin = GAME_STATUS_PLAYER1_OFFSET;
+                next_begin = GAME_STATUS_PLAYER0_OFFSET;
+            }
+
+            int column = m.cell.x;
+            int row = m.cell.y;
+
+            boolean[] direction = possibleCell(nextGameStatus, currPlayer, nextPlayer, column, row);
+
+            int x, y;
+            int bit_flipped;
+
+            if(direction[iW])
+                for(x = column - 1; (nextGameStatus[curr_begin + row] & (bit_flipped = (1 << (7 - x)))) == 0; x--){
+                    nextGameStatus[curr_begin + row] |= bit_flipped;
+                    nextGameStatus[next_begin + row] ^= bit_flipped;
+                }
+            if(direction[iE])
+                for(x = column + 1; (nextGameStatus[curr_begin + row] & (bit_flipped = (1 << (7 - x)))) == 0; x++){
+                    nextGameStatus[curr_begin + row] |= bit_flipped;
+                    nextGameStatus[next_begin + row] ^= bit_flipped;
+                }
+            if(direction[iN])
+                for(y = row - 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - column)))) == 0; y--){
+                    nextGameStatus[curr_begin + y] |= bit_flipped;
+                    nextGameStatus[next_begin + y] ^= bit_flipped;
+                }
+            if(direction[iS])
+                for(y = row + 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - column)))) == 0; y++){
+                    nextGameStatus[curr_begin + y] |= bit_flipped;
+                    nextGameStatus[next_begin + y] ^= bit_flipped;
+                }
+            if(direction[iNW])
+                for(x = column - 1, y = row - 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - x)))) == 0; x--, y--){
+                    nextGameStatus[curr_begin + y] |= bit_flipped;
+                    nextGameStatus[next_begin + y] ^= bit_flipped;
+                }
+            if(direction[iNE])
+                for(x = column + 1, y = row - 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - x)))) == 0; x++, y--){
+                    nextGameStatus[curr_begin + y] |= bit_flipped;
+                    nextGameStatus[next_begin + y] ^= bit_flipped;
+                }
+            if(direction[iSE])
+                for(x = column + 1, y = row + 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - x)))) == 0; x++, y++){
+                    nextGameStatus[curr_begin + y] |= bit_flipped;
+                    nextGameStatus[next_begin + y] ^= bit_flipped;
+                }
+            if(direction[iSW])
+                for(x = column - 1, y = row + 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - x)))) == 0; x--, y++){
+                    nextGameStatus[curr_begin + y] |= bit_flipped;
+                    nextGameStatus[next_begin + y] ^= bit_flipped;
+                }
+
+            nextGameStatus[curr_begin + row] |= 1<<(7-column);
+        }
+
+        return nextGameStatus;
     }
 
     @Override
