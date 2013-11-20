@@ -1,5 +1,7 @@
 package com.squirrelapps.aigameframework;
 
+import android.util.Log;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -8,6 +10,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public final class GameManager implements Runnable
 {
+    private static final String TAG = GameManager.class.getSimpleName();
+
     public static enum GameRunnerState{
         Ready,
         Playing,
@@ -71,7 +75,9 @@ public final class GameManager implements Runnable
     {
         //TODO start GameRunner and notify
         if(gameRunner != null && gameRunner.isAlive()){
-            throw new IllegalStateException("Game already started"); //TODO custom exception
+            //throw new IllegalStateException("Game already started"); //REMIND startGame may be called more times
+            Log.w(TAG, "Game already started");
+            return this;
         }
 
 //        synchronized(game){
@@ -175,13 +181,8 @@ public final class GameManager implements Runnable
 
                             //TODO andrebbe effettuato un check sul nuovo gameStatus
 
-                            //move = gameStatus.move; //TODO notify!? ma a questo punto tutto il gamestatus!
-
                             game.gameHistory.add(gameStatus);
 
-//                            gameListener.onGameUpdate(game, GameRunnerState.Playing);
-
-                            //...gameStatus.moveNumber;
                             break;
 
                         case Stopped:
@@ -204,10 +205,12 @@ public final class GameManager implements Runnable
 //            else
 //                "It's a draw!"
         }catch(InterruptedException ie){
+            Log.w(TAG, "GameManager interrupted");
             //TODO winnePlayers = null;
         }finally{
+            Log.d(TAG, "GameManager terminated");
             //TODO finally...
-            gameListener.onGameUpdate(game, gameRunnerState);
+            gameListener.onGameUpdate(game, /*gameRunnerState*/GameRunnerState.Stopped); //FIXME fuori dal mutex gameRunnerState potrebbe non valere più Stopped
         }
     }
 }

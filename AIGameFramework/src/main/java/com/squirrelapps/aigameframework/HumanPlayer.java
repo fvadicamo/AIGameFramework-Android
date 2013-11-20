@@ -26,7 +26,7 @@ public class HumanPlayer extends Player
         //playable moves.. le notifica e sceglie una tra quelle col tap
 
         try{
-            Thread.sleep(5000l);
+            Thread.sleep(200l);
         }catch(InterruptedException e){
             e.printStackTrace();
         }
