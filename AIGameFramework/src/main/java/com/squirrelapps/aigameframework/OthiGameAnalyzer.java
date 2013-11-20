@@ -20,6 +20,9 @@ public class OthiGameAnalyzer extends GameAnalyzer
 
     private static final byte ALL_ONES = ~0; //(byte)-1
 
+    private static final byte MSB_ONE = (byte)(1 << 7); //Most Significant Bit (MSB) = 1
+    private static final byte MSB_ONE_NEG = ~MSB_ONE; //Most Significant Bit (MSB) = 0 and all other "mask" bits = 1
+
 //    public static final int X_DIM = 8;
 //    public static final int Y_DIM = 8;
 //    public static final int PLAYERS_NUM = 2;
@@ -35,7 +38,7 @@ public class OthiGameAnalyzer extends GameAnalyzer
 
     //CODED_GAME_STATUS = GAME_STATUS_MOVENUMBER | GAME_STATUS_MOVE | GAME_STATUS_PLAYER0 | GAME_STATUS_PLAYER1
 
-    protected static final int CODED_MOVENUMBER_SIZE = 1; //almost 64 moves
+    protected static final int CODED_MOVENUMBER_SIZE = 1; //almost 64 moves > if the MSB of move number is set to 1 means that it's a final status
 
     protected static final int CODED_MOVE_ID_INDEX = 0; /*id*/
     protected static final int CODED_MOVE_PIECE_INDEX = 1; /*piece*/
@@ -46,6 +49,9 @@ public class OthiGameAnalyzer extends GameAnalyzer
     protected static final int CODED_PLAYER_SIZE = OthiGameRules.Y_DIM; //1 byte for each row
 
     public static final int GAME_STATUS_MOVENUMBER_OFFSET = 0;
+    public static final int GAME_STATUS_MOVENUMBER_MASK = MSB_ONE_NEG;
+    public static final int GAME_STATUS_FINALSTATUS_OFFSET = 0;
+    public static final int GAME_STATUS_FINALSTATUS_MASK = MSB_ONE;
     public static final int GAME_STATUS_MOVE_OFFSET = GAME_STATUS_MOVENUMBER_OFFSET + CODED_MOVENUMBER_SIZE;
     public static final int GAME_STATUS_PLAYER0_OFFSET = GAME_STATUS_MOVE_OFFSET + CODED_MOVE_SIZE;
     public static final int GAME_STATUS_PLAYER1_OFFSET = GAME_STATUS_PLAYER0_OFFSET + CODED_PLAYER_SIZE;
@@ -160,6 +166,9 @@ public class OthiGameAnalyzer extends GameAnalyzer
         byte[] coded = new byte[CODED_MOVENUMBER_SIZE + CODED_MOVE_SIZE + CODED_PLAYER_SIZE*gameStatus.playersStatus.length];
 
         coded[GAME_STATUS_MOVENUMBER_OFFSET] = (byte)(gameStatus.moveNumber);
+        if(gameStatus.isGameOver()){
+            coded[GAME_STATUS_FINALSTATUS_OFFSET] |= GAME_STATUS_FINALSTATUS_MASK;
+        }
 
         byte[] coded_move = encode(gameStatus.move);
         System.arraycopy(coded_move, 0, coded, GAME_STATUS_MOVE_OFFSET, CODED_MOVE_SIZE);
@@ -217,8 +226,10 @@ public class OthiGameAnalyzer extends GameAnalyzer
         final int xDim = OthiGameRules.X_DIM; //board.xDim; //8
         final int yDim = OthiGameRules.Y_DIM; //board.yDim; //8
 
-        final int moveNumber = coded[GAME_STATUS_MOVENUMBER_OFFSET];
+        final int moveNumber = coded[GAME_STATUS_MOVENUMBER_OFFSET] & GAME_STATUS_MOVENUMBER_MASK;
         gs.setMoveNumber(moveNumber);
+
+        gs.setGameOver((coded[GAME_STATUS_FINALSTATUS_OFFSET] & GAME_STATUS_FINALSTATUS_MASK) != 0);
 
         final byte[] coded_move = Arrays.copyOfRange(coded, GAME_STATUS_MOVE_OFFSET, GAME_STATUS_MOVE_OFFSET + CODED_MOVE_SIZE);
         final Move move = decodeMove(coded_move);
@@ -278,52 +289,68 @@ public class OthiGameAnalyzer extends GameAnalyzer
             return direction;
         }else{
             if(column > 1 && (gameStatus[next_begin + row] & (1 << (7 - column + 1))) != 0){
-                for(i = column - 2; i > 0 && (gameStatus[next_begin + row] & (1 << (7 - i))) != 0; i--)
-                    ;
-                if((gameStatus[curr_begin + row] & (1 << (7 - i))) != 0)
+                for(i = column - 2; i > 0 && (gameStatus[next_begin + row] & (1 << (7 - i))) != 0; i--){
+                    //SKIP
+                }
+                if((gameStatus[curr_begin + row] & (1 << (7 - i))) != 0){
                     direction[iW] = true;
+                }
             }
             if(column < 6 && (gameStatus[next_begin + row] & (1 << (7 - column - 1))) != 0){
-                for(i = column + 2; i < 7 && (gameStatus[next_begin + row] & (1 << (7 - i))) != 0; i++)
-                    ;
-                if((gameStatus[curr_begin + row] & (1 << (7 - i))) != 0)
+                for(i = column + 2; i < 7 && (gameStatus[next_begin + row] & (1 << (7 - i))) != 0; i++){
+                    //SKIP
+                }
+                if((gameStatus[curr_begin + row] & (1 << (7 - i))) != 0){
                     direction[iE] = true;
+                }
             }
             if(row > 1 && (gameStatus[next_begin + row - 1] & (1 << (7 - column))) != 0){
-                for(j = row - 2; j > 0 && (gameStatus[next_begin + j] & (1 << (7 - column))) != 0; j--)
-                    ;
-                if((gameStatus[curr_begin + j] & (1 << (7 - column))) != 0)
+                for(j = row - 2; j > 0 && (gameStatus[next_begin + j] & (1 << (7 - column))) != 0; j--){
+                    //SKIP
+                }
+                if((gameStatus[curr_begin + j] & (1 << (7 - column))) != 0){
                     direction[iN] = true;
+                }
             }
             if(row < 6 && (gameStatus[next_begin + row + 1] & (1 << (7 - column))) != 0){
-                for(j = row + 2; j < 7 && (gameStatus[next_begin + j] & (1 << (7 - column))) != 0; j++)
-                    ;
-                if((gameStatus[curr_begin + j] & (1 << (7 - column))) != 0)
+                for(j = row + 2; j < 7 && (gameStatus[next_begin + j] & (1 << (7 - column))) != 0; j++){
+                    //SKIP
+                }
+                if((gameStatus[curr_begin + j] & (1 << (7 - column))) != 0){
                     direction[iS] = true;
+                }
             }
             if(column > 1 && row > 1 && (gameStatus[next_begin + row - 1] & (1 << (7 - column + 1))) != 0){
-                for(i = column - 2, j = row - 2; i > 0 && j > 0 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i--, j--)
-                    ;
-                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0)
+                for(i = column - 2, j = row - 2; i > 0 && j > 0 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i--, j--){
+                    //SKIP
+                }
+                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0){
                     direction[iNW] = true;
+                }
             }
             if(column < 6 && row > 1 && (gameStatus[next_begin + row - 1] & (1 << (7 - column - 1))) != 0){
-                for(i = column + 2, j = row - 2; i < 7 && j > 0 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i++, j--)
-                    ;
-                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0)
+                for(i = column + 2, j = row - 2; i < 7 && j > 0 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i++, j--){
+                    //SKIP
+                }
+                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0){
                     direction[iNE] = true;
+                }
             }
             if(column < 6 && row < 6 && (gameStatus[next_begin + row + 1] & (1 << (7 - column - 1))) != 0){
-                for(i = column + 2, j = row + 2; i < 7 && j < 7 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i++, j++)
-                    ;
-                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0)
+                for(i = column + 2, j = row + 2; i < 7 && j < 7 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i++, j++){
+                    //SKIP
+                }
+                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0){
                     direction[iSE] = true;
+                }
             }
             if(column > 1 && row < 6 && (gameStatus[next_begin + row + 1] & (1 << (7 - column + 1))) != 0){
-                for(i = column - 2, j = row + 2; i > 0 && j < 7 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i--, j++)
-                    ;
-                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0)
+                for(i = column - 2, j = row + 2; i > 0 && j < 7 && (gameStatus[next_begin + j] & (1 << (7 - i))) != 0; i--, j++){
+                    //SKIP
+                }
+                if((gameStatus[curr_begin + j] & (1 << (7 - i))) != 0){
                     direction[iSW] = true;
+                }
             }
 
             return direction;
@@ -680,8 +707,9 @@ public class OthiGameAnalyzer extends GameAnalyzer
     {
         Collection<Cell> cells = playableCells(gameStatus, playerId);
 
-        if(cells.isEmpty())
+        if(cells.isEmpty()){
             return Collections.singleton(CODED_MOVE_NONE);
+        }
 
         Collection<byte[]> moves = new LinkedList<byte[]>();
         for(Cell cell : cells){
@@ -759,48 +787,60 @@ public class OthiGameAnalyzer extends GameAnalyzer
             int x, y;
             int bit_flipped;
 
-            if(direction[iW])
+            if(direction[iW]){
                 for(x = column - 1; (nextGameStatus[curr_begin + row] & (bit_flipped = (1 << (7 - x)))) == 0; x--){
                     nextGameStatus[curr_begin + row] |= bit_flipped;
                     nextGameStatus[next_begin + row] ^= bit_flipped;
                 }
-            if(direction[iE])
+            }
+            if(direction[iE]){
                 for(x = column + 1; (nextGameStatus[curr_begin + row] & (bit_flipped = (1 << (7 - x)))) == 0; x++){
                     nextGameStatus[curr_begin + row] |= bit_flipped;
                     nextGameStatus[next_begin + row] ^= bit_flipped;
                 }
-            if(direction[iN])
+            }
+            if(direction[iN]){
                 for(y = row - 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - column)))) == 0; y--){
                     nextGameStatus[curr_begin + y] |= bit_flipped;
                     nextGameStatus[next_begin + y] ^= bit_flipped;
                 }
-            if(direction[iS])
+            }
+            if(direction[iS]){
                 for(y = row + 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - column)))) == 0; y++){
                     nextGameStatus[curr_begin + y] |= bit_flipped;
                     nextGameStatus[next_begin + y] ^= bit_flipped;
                 }
-            if(direction[iNW])
+            }
+            if(direction[iNW]){
                 for(x = column - 1, y = row - 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - x)))) == 0; x--, y--){
                     nextGameStatus[curr_begin + y] |= bit_flipped;
                     nextGameStatus[next_begin + y] ^= bit_flipped;
                 }
-            if(direction[iNE])
+            }
+            if(direction[iNE]){
                 for(x = column + 1, y = row - 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - x)))) == 0; x++, y--){
                     nextGameStatus[curr_begin + y] |= bit_flipped;
                     nextGameStatus[next_begin + y] ^= bit_flipped;
                 }
-            if(direction[iSE])
+            }
+            if(direction[iSE]){
                 for(x = column + 1, y = row + 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - x)))) == 0; x++, y++){
                     nextGameStatus[curr_begin + y] |= bit_flipped;
                     nextGameStatus[next_begin + y] ^= bit_flipped;
                 }
-            if(direction[iSW])
+            }
+            if(direction[iSW]){
                 for(x = column - 1, y = row + 1; (nextGameStatus[curr_begin + y] & (bit_flipped = (1 << (7 - x)))) == 0; x--, y++){
                     nextGameStatus[curr_begin + y] |= bit_flipped;
                     nextGameStatus[next_begin + y] ^= bit_flipped;
                 }
+            }
 
             nextGameStatus[curr_begin + row] |= 1<<(7-column);
+        }
+
+        if(checkFinalGameStatus(nextGameStatus)){
+            nextGameStatus[GAME_STATUS_FINALSTATUS_OFFSET] |= GAME_STATUS_FINALSTATUS_MASK;
         }
 
         return nextGameStatus;
@@ -847,6 +887,12 @@ public class OthiGameAnalyzer extends GameAnalyzer
 
     public boolean isFinalGameStatus(byte[] gameStatus)
     {
+        //return gameStatus[GAME_STATUS_FINALSTATUS_OFFSET] < 0;
+        return (gameStatus[GAME_STATUS_FINALSTATUS_OFFSET] & GAME_STATUS_FINALSTATUS_MASK) != 0;
+    }
+
+    public boolean checkFinalGameStatus(byte[] gameStatus)
+    {
 //        if(gameStatus[GAME_STATUS_MOVENUMBER_OFFSET] >= 60){
 //            byte[] gameFieldStatus = gameFieldStatus(gameStatus);
 //            int i;
@@ -884,7 +930,7 @@ public class OthiGameAnalyzer extends GameAnalyzer
                 continue; //SKIP ROW...
             }else{
                 for(int x = 0; x < OthiGameRules.X_DIM; x++){
-                    if((curr_row & (1 << (7 - x))) == 0 && isPlayableCell(gameStatus, curr_player, next_player, x, y)){
+                    if((curr_row & (1 << (7 - x))) == 0 && (isPlayableCell(gameStatus, curr_player, next_player, x, y) || isPlayableCell(gameStatus, next_player, curr_player, x, y))){
                         playable_cells++; //TODO TESTARE CHE SIA TUTTO OK!
                     }
                 }
