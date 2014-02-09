@@ -120,7 +120,7 @@ public class BoardFragment extends Fragment implements Button.OnClickListener
             }
         }
 
-        final ViewTreeObserver obs = gridLayout.getViewTreeObserver();
+        ViewTreeObserver obs = gridLayout.getViewTreeObserver();
         if(obs != null){
             obs.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
                 @Override
@@ -136,8 +136,8 @@ public class BoardFragment extends Fragment implements Button.OnClickListener
                         onDefaultBoardLayout(rl, gl);
                     }
 
-                    //ViewTreeObserver obs = gl.getViewTreeObserver();
-                    //assert obs != null;
+                    ViewTreeObserver obs = gl.getViewTreeObserver();
+                    assert obs != null;
                     obs.removeOnGlobalLayoutListener(this);
                 }
             });
