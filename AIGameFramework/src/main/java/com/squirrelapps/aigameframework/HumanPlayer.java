@@ -13,16 +13,16 @@ public class HumanPlayer extends Player
     }
 
     @Override
-    public GameStatus makeMove(GameAnalyzer gameAnalyzer, GameStatus gameStatus)
+    public GameStatus makeMove(GameAnalyzer gameAnalyzer, GameStatus newGameStatus, Collection<? extends Move> moves)
     {
-        GameStatus newGameStatus;
-        try{
-            newGameStatus = (GameStatus)gameStatus.clone(); //TODO il clone potrebbe essere fatto a monte, dal chiamante di makeMove
-        }catch(CloneNotSupportedException e){
-            throw new IllegalStateException("GameStatus not clonable"); //TODO check...
-        }
+//        GameStatus newGameStatus;
+//        try{
+//            newGameStatus = (GameStatus)gameStatus.clone(); //TODO il clone potrebbe essere fatto a monte, dal chiamante di makeMove
+//        }catch(CloneNotSupportedException e){
+//            throw new IllegalStateException("GameStatus not clonable");
+//        }
 
-        Collection<? extends Move> moves = gameAnalyzer.playableMoves(newGameStatus, id);
+//        Collection<? extends Move> moves = gameAnalyzer.playableMoves(newGameStatus, id);
         //playable moves.. le notifica e sceglie una tra quelle col tap
 
         try{

@@ -8,11 +8,15 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
@@ -23,6 +27,7 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
 
     /** Game Update Message */
     private static final int MESSAGE_GAME_UPDATE = 1;
+    private static final int MESSAGE_MOVES_AVAILABLE = 2;
 
     protected GameManager gameManager;
 //    protected Game game;
@@ -36,6 +41,9 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
             switch (message.what) {
                 case MESSAGE_GAME_UPDATE:
                     handleGameUpdate((Game)message.obj);
+                    break;
+                case MESSAGE_MOVES_AVAILABLE:
+                    handleMovesAvailable((Collection<? extends Move>)message.obj);
                     break;
             }
         }
@@ -84,12 +92,43 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        /*return*/ super.onPrepareOptionsMenu(menu);
+        MenuItem playItem = menu.findItem(R.id.action_play);
+        assert playItem != null;
+        if(gameManager.gameRunnerState == GameManager.GameRunnerState.Playing){
+            playItem.setIcon(android.R.drawable.ic_media_pause);
+        }else{
+            playItem.setIcon(android.R.drawable.ic_media_play);
+        }
+
+        //...
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch(item.getItemId()){
+            case R.id.action_play:
+                gameManager.startGame();
+                return true;
+                //break;
+            default:
+                return super.onOptionsItemSelected(item);
+                //break;
+        }
+    }
+
+    @Override
     protected void onStart()
     {
         Log.d(TAG, "onStart");
         super.onStart();
 
-        gameManager.startGame();
+        //gameManager.startGame();
     }
 
     @Override
@@ -196,6 +235,10 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
 
     private void handleGameUpdate(Game game)
     {
+        supportInvalidateOptionsMenu(); //TODO spostare in handleGameStateUpdate quando ci sarà
+
+        boardFragment.stopAnimation();
+
         //FIXME testing OthiGame > TO REMOVE > we know that boardStatus is instanceof SimpleBoardStatus
         SimpleBoardStatus sbs = (SimpleBoardStatus)game.gameHistory.getLast().boardStatus;
         Map<Cell, Piece> piecesMap = sbs.piecesMap;
@@ -210,5 +253,24 @@ public class GameActivity extends FragmentActivity implements BoardFragment.Boar
                 boardButtons[c.x][c.y].setText("");
             }
         }
+    }
+
+    @Override
+    public void onMovesAvailable(Collection<? extends Move> moves)
+    {
+        assert(moves != null):"Moves cannot be null";
+        handler.obtainMessage(MESSAGE_MOVES_AVAILABLE, moves).sendToTarget();
+    }
+
+    private void handleMovesAvailable(Collection<? extends Move> moves)
+    {
+        boardFragment.stopAnimation();
+        Set<Cell> cells = new HashSet<Cell>(moves.size());
+        for(Move m : moves){
+            if(!m.equals(OthiGame.MOVE_NONE)){
+                cells.add(((OthiMove)m).cell); //FIXME test OthiGame
+            }
+        }
+        boardFragment.animate(cells);
     }
 }

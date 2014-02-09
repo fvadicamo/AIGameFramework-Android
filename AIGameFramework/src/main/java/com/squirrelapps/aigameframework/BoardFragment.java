@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by Francesco Vadicamo on 9/21/13.
+ * Copyright (C) 2014 Francesco Vadicamo.
  */
 public class BoardFragment extends Fragment implements Button.OnClickListener
 {
@@ -73,6 +73,7 @@ public class BoardFragment extends Fragment implements Button.OnClickListener
     {
         Log.d(TAG, "onCreateView()");
         final View rootView = inflater.inflate(R.layout.f_board, container, false);
+        assert rootView != null;
 
         Activity activity = getActivity();
 
@@ -93,7 +94,7 @@ public class BoardFragment extends Fragment implements Button.OnClickListener
             //row.setBackgroundColor(Color.YELLOW); //FIXME rimuovere a fine debug
             for (int x = 0; x < xDim; ++x){
                 //TODO si potrebbe richiamare un metodo del listener per ricevere la view per la cella
-                Button btn = new Button(getActivity());
+                Button btn = new Button(activity);
                 //width and height will be set later (see fillBoardLayout method)
 
                 Cell cell = board.cells[x][y];
@@ -119,24 +120,28 @@ public class BoardFragment extends Fragment implements Button.OnClickListener
             }
         }
 
-        gridLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
-            @Override
-            public void onGlobalLayout()
-            {
-                ViewGroup rl = (ViewGroup)rootView.findViewById(R.id.rootLayout);
-                Log.v(TAG, "root layout: "+rl.getWidth()+", "+rl.getHeight());
+        final ViewTreeObserver obs = gridLayout.getViewTreeObserver();
+        if(obs != null){
+            obs.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener(){
+                @Override
+                public void onGlobalLayout()
+                {
+                    ViewGroup rl = (ViewGroup)rootView.findViewById(R.id.rootLayout);
+                    Log.v(TAG, "root layout: "+rl.getWidth()+", "+rl.getHeight());
 
-                GridLayout gl = (GridLayout)rootView.findViewById(R.id.boardLayout);
-                Log.v(TAG, "grid layout: "+gl.getWidth()+", "+gl.getHeight());
+                    GridLayout gl = (GridLayout)rootView.findViewById(R.id.boardLayout);
+                    Log.v(TAG, "grid layout: "+gl.getWidth()+", "+gl.getHeight());
 
-                if(!boardListener.onBoardLayout(rl, gl)){
-                    onDefaultBoardLayout(rl, gl);
+                    if(!boardListener.onBoardLayout(rl, gl)){
+                        onDefaultBoardLayout(rl, gl);
+                    }
+
+                    //ViewTreeObserver obs = gl.getViewTreeObserver();
+                    //assert obs != null;
+                    obs.removeOnGlobalLayoutListener(this);
                 }
-
-                ViewTreeObserver obs = gl.getViewTreeObserver();
-                obs.removeOnGlobalLayoutListener(this);
-            }
-        });
+            });
+        }
         //consider also the following
 //        gridLayout.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener(){
 //            @Override
@@ -185,6 +190,8 @@ public class BoardFragment extends Fragment implements Button.OnClickListener
         Button btn;
         for(int i = 0; i < boardLayout.getChildCount(); i++){
             btn = (Button) boardLayout.getChildAt(i);
+            assert btn != null;
+
             btn.setWidth(cell_size);
             btn.setMinimumWidth(cell_size);
             btn.setMaxWidth(cell_size);
@@ -293,24 +300,42 @@ public class BoardFragment extends Fragment implements Button.OnClickListener
 
                 Set<Cell> neighbors = board.borderNeighbors(cell, lastDistance);
                 Log.v(TAG, neighbors.size() + " neighbors of " + cell + " at distance "+lastDistance+" found: "+ Arrays.toString(neighbors.toArray()));
-                for(Cell c : neighbors){
-                    Button btn = boardButtons[c.x][c.y];
-                    btn.setBackgroundResource(R.drawable.cell_neighbors_anim);
-                    // Get the background, which has been compiled to an AnimationDrawable object.
-                    AnimationDrawable frameAnimation = (AnimationDrawable)btn.getBackground();
-                    // Start the animation (looped playback by default).
-                    frameAnimation.start();
-
-                    animatedButtons.add(btn);
-                }
+//                for(Cell c : neighbors){
+//                    Button btn = boardButtons[c.x][c.y];
+//                    btn.setBackgroundResource(R.drawable.cell_neighbors_anim);
+//                    // Get the background, which has been compiled to an AnimationDrawable object.
+//                    AnimationDrawable frameAnimation = (AnimationDrawable)btn.getBackground();
+//                    // Start the animation (looped playback by default).
+//                    frameAnimation.start();
+//
+//                    animatedButtons.add(btn);
+//                }
+                animate(neighbors);
             }
         }
     }
 
-    private synchronized void stopAnimation()
+    public synchronized void animate(Set<Cell> cells)
+    {
+        for(Cell c : cells){
+            Button btn = boardButtons[c.x][c.y];
+            btn.setBackgroundResource(R.drawable.cell_neighbors_anim);
+            // Get the background, which has been compiled to an AnimationDrawable object.
+            AnimationDrawable frameAnimation = (AnimationDrawable)btn.getBackground();
+            assert frameAnimation != null;
+            // Start the animation (looped playback by default).
+            frameAnimation.start();
+
+            animatedButtons.add(btn);
+        }
+
+    }
+
+    public synchronized void stopAnimation()
     {
         for(Button btn : animatedButtons){
             AnimationDrawable frameAnimation = (AnimationDrawable)btn.getBackground();
+            assert frameAnimation != null;
             // Stop the animation (looped playback by default).
             frameAnimation.stop();
 

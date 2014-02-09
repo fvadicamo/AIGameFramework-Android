@@ -1,5 +1,7 @@
 package com.squirrelapps.aigameframework;
 
+import java.util.Collection;
+
 /**
  * Copyright (C) 2013 Francesco Vadicamo.
  */
@@ -15,5 +17,5 @@ public abstract class Player
     }
 
     /**Make the move using the specified <code>GameAnalyzer</code> and <code>GameStatus</code>*/
-    public abstract GameStatus makeMove(GameAnalyzer gameAnalyzer, GameStatus gameStatus);
+    public abstract GameStatus makeMove(GameAnalyzer gameAnalyzer, GameStatus gameStatus, Collection<? extends Move> moves);
 }

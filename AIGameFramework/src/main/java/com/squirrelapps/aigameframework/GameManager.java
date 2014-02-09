@@ -2,6 +2,7 @@ package com.squirrelapps.aigameframework;
 
 import android.util.Log;
 
+import java.util.Collection;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,6 +24,7 @@ public final class GameManager implements Runnable
     public interface GameListener {
 //        public void onGameCreate(Game game, GameRunnerState gameRunnerState);
         public void onGameUpdate(Game game, GameRunnerState gameRunnerState);
+        public void onMovesAvailable(Collection<? extends Move> moves);
     }
 
     final Game game;
@@ -137,7 +139,9 @@ public final class GameManager implements Runnable
 //            game.notifyAll();
             condition.signalAll();
 
-            gameRunner.interrupt();
+            if(gameRunner != null && !gameRunner.isInterrupted()){
+                gameRunner.interrupt();
+            }
         }finally{
             lock.unlock();
         }
@@ -156,7 +160,7 @@ public final class GameManager implements Runnable
 //            Move move;
             int playerId;
             Player player;
-            while(!gameStatus.isGameOver() /*!gameAnalyzer.isFinalGameStatus(gameStatusCoded)*/ && !gameRunner.isInterrupted()){
+            while(!gameStatus.isGameOver() /*!gameAnalyzer.isFinalGameStatus(gameStatusCoded)*/ && gameRunner != null && !gameRunner.isInterrupted()){
 //                synchronized(game){
                 lock.lock();
                 try{
@@ -175,13 +179,23 @@ public final class GameManager implements Runnable
                             playerId = gameStatus.getNextPlayer();
                             player = game.players[playerId];
 
+                            GameStatus newGameStatus;
+                            try{
+                                newGameStatus = (GameStatus)gameStatus.clone();
+                            }catch(CloneNotSupportedException e){
+                                throw new IllegalStateException("GameStatus not clonable"); //TODO check...
+                            }
+
+                            Collection<? extends Move> moves = gameAnalyzer.playableMoves(newGameStatus, playerId);
+                            gameListener.onMovesAvailable(moves);
+
                             lock.unlock();
-                            gameStatus = player.makeMove(gameAnalyzer, gameStatus); //blocking call
+                            gameStatus = player.makeMove(gameAnalyzer, newGameStatus, moves); //blocking call
                             lock.lock();
 
                             //TODO andrebbe effettuato un check sul nuovo gameStatus
 
-                            game.gameHistory.add(gameStatus);
+                            game.gameHistory.add(newGameStatus);
 
                             break;
 
